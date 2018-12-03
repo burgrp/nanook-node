@@ -13,6 +13,9 @@
                     },
                     "mg": {
                         "module": "./i2c-mg.js"
+                    },
+                    "hw": {
+                        "module": "./i2c-hw.js"
                     }
                 }
             },
