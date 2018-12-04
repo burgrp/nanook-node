@@ -1,0 +1,11 @@
+[Unit]
+Description=NANOOK
+After=network.target
+
+[Service]
+Environment="HTTP_PORT=80"
+WorkingDirectory=/opt/nanook-node
+ExecStart=/usr/bin/node src/main.js
+
+[Install]
+WantedBy=multi-user.target
