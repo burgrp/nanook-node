@@ -4,9 +4,9 @@ module.exports = config => {
     return {
         async open(address) {
             try {
-                const bus = new Bus();
+                const bus = new Bus(parseInt(address || 0));
                 console.info("Opening I2C bus...");
-                await bus.open(parseInt(address || 0));
+                await bus.open();
 
                 return {
                     async read(address, length) {
