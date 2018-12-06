@@ -1,15 +1,16 @@
-const i2c = require("i2c-bus");
+const Bus = require("i2c-bus-promised").Bus;
 
 module.exports = config => {
     return {
-        open(address) {
+        async open(address) {
             try {
-                let bus = i2c.openSync(parseInt(address || 0));
+                const bus = new Bus();
+                await bus.open(parseInt(address || 0));
 
                 return {
                     async read(address, length) {
                         let buffer = Buffer.alloc(length);
-                        let read = bus.i2cReadSync(parseInt(address), length, buffer);
+                        let read = await bus.i2cRead(parseInt(address), length, buffer);
                         if (read !== length) {
                             throw `Could read only ${read} bytes from ${length}`;
                         }
@@ -18,7 +19,7 @@ module.exports = config => {
 
                     async write(address, data) {
                         let buffer = Buffer.from(data);
-                        let written = bus.i2cWriteSync(parseInt(address), data.length, buffer);
+                        let written = await bus.i2cWrite(parseInt(address), data.length, buffer);
                         if (written !== length) {
                             throw `Could write only ${read} bytes from ${length}`;
                         }
