@@ -5,7 +5,7 @@ After=network.target
 [Service]
 Environment="HTTP_PORT=80"
 WorkingDirectory=/opt/nanook-node
-ExecStart=/usr/bin/node src/main.js
+ExecStart=/usr/bin/node --inspect=0.0.0.0:9229 --max-old-space-size=100 src/main.js
 
 [Install]
 WantedBy=multi-user.target
