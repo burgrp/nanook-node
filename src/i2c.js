@@ -27,7 +27,7 @@ module.exports = config => {
         }
 
         let attempt = 1;
-        while(true) {
+        while (true) {
             try {
                 return await action(i2c);
             } catch (e) {
@@ -39,7 +39,7 @@ module.exports = config => {
                     if (i2c.close) {
                         await i2c.close();
                     }
-                } catch {
+                } catch (e) {
                     // fall through
                 }
                 i2c = await transport.open(busName);
