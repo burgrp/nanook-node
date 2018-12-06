@@ -35,6 +35,13 @@ module.exports = config => {
                     throw e;
                 }
                 attempt++;
+                try {
+                    if (i2c.close) {
+                        await i2c.close();
+                    }
+                } catch {
+                    // fall through
+                }
                 i2c = await transport.open(busName);
                 console.info("I2C operation failed, retry " + attempt);
                 await asyncWait(100);

@@ -5,6 +5,7 @@ module.exports = config => {
         async open(address) {
             try {
                 const bus = new Bus();
+                console.info("Opening I2C bus...");
                 await bus.open(parseInt(address || 0));
 
                 return {
@@ -23,6 +24,11 @@ module.exports = config => {
                         if (written !== length) {
                             throw `Could write only ${read} bytes from ${length}`;
                         }
+                    },
+
+                    async close() {
+                        console.info("Closing I2C bus...");
+                        await bus.close();
                     }
                 }
             } catch (e) {
