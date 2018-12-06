@@ -11,7 +11,7 @@ module.exports = config => {
                 return {
                     async read(address, length) {
                         let buffer = Buffer.alloc(length);
-                        let read = await bus.i2cRead(parseInt(address), length, buffer);
+                        let read = await bus.read(parseInt(address), length, buffer);
                         if (read !== length) {
                             throw `Could read only ${read} bytes from ${length}`;
                         }
@@ -20,7 +20,7 @@ module.exports = config => {
 
                     async write(address, data) {
                         let buffer = Buffer.from(data);
-                        let written = await bus.i2cWrite(parseInt(address), data.length, buffer);
+                        let written = await bus.write(parseInt(address), data.length, buffer);
                         if (written !== length) {
                             throw `Could write only ${read} bytes from ${length}`;
                         }
