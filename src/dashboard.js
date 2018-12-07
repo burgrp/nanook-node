@@ -34,6 +34,14 @@ module.exports = async config => {
 
                 async clearSystemError(key) {
                     await config.controller.clearSystemError(key);
+                },
+
+                async start() {
+                    await config.controller.start();
+                },
+
+                async stop() {
+                    await config.controller.stop();
                 }
 
             }

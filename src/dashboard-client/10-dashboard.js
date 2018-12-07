@@ -28,35 +28,34 @@ wg.pages.home = {
         }
 
         function startStopButtons(action, lock) {
-                let start = BUTTON("start" + (lock? " locked": "")).text("Start").click(e => checkAction(async () => await action(true)));
-                let stop = BUTTON("stop" + (lock? " locked": "")).text("Stop").click(e => checkAction(async () => await action(false)));
+            let start = BUTTON("start" + (lock ? " locked" : "")).text("Start").click(e => checkAction(async () => await action(true)));
+            let stop = BUTTON("stop" + (lock ? " locked" : "")).text("Stop").click(e => checkAction(async () => await action(false)));
             return [
-                lock? BUTTON("unlock").text("Unlock").click(e => {
-                        $(start).toggleClass("locked", false);
-                        $(stop).toggleClass("locked", false);
-                        $(e.target).remove();
-                }): undefined,
-                start, 
+                lock ? BUTTON("unlock").text("Unlock").click(e => {
+                    $(start).toggleClass("locked", false);
+                    $(stop).toggleClass("locked", false);
+                    $(e.target).remove();
+                }) : undefined,
+                start,
                 stop
             ];
         }
 
         function eevButton(text, change, fast) {
-                return BUTTON().text(text).click(e => checkAction(async () => await wg.dashboard.eevRun(change, fast)))
+            return BUTTON().text(text).click(e => checkAction(async () => await wg.dashboard.eevRun(change, fast)))
         }
 
         let controls = {
-            controllerEnabled: startStopButtons(async s => await wg.dashboard.setRegister("controllerEnabled", s)),
-            compressorControl: startStopButtons(async s => await wg.dashboard.setRegister("compressorControl", s), true),
+            sequenceInProgress: startStopButtons(async s => await (s? wg.dashboard.start:wg.dashboard.stop)(s), true),
             coldWaterPump: startStopButtons(async s => await wg.dashboard.setColdWaterPump(s)),
             hotWaterPump: startStopButtons(async s => await wg.dashboard.setHotWaterPump(s)),
             eevPosition: [
-                eevButton("Open", -500, true),
+                eevButton("OP", -500, true),
                 eevButton("<<", -50, false),
                 eevButton("<", -10, false),
                 eevButton(">", 10, false),
                 eevButton(">>", 50, false),
-                eevButton("Close", 500, true)
+                eevButton("CL", 500, true)
             ]
         }
 
@@ -64,11 +63,11 @@ wg.pages.home = {
 
         function updateSystemErrors(se) {
             systemErrors.empty().append(Object.entries(se).map(([key, message]) => DIV("system-error").text(message).click(async e => {
-                    try {
-                        await wg.dashboard.clearSystemError(key);
-                    } catch(e) {
-                            showNotification(e);
-                    }
+                try {
+                    await wg.dashboard.clearSystemError(key);
+                } catch (e) {
+                    showNotification(e);
+                }
             })));
         }
 
@@ -133,22 +132,22 @@ wg.pages.home = {
                         )
                 ),
                 DIV("schema-errors", [
-                        DIV("schema", span => {
-                            $.get("schema.svg", svg => {
-                                let svgStr = (new window.XMLSerializer()).serializeToString(svg);
-                                span.html(svgStr);
-                                span.find("tspan").each((i, tspan) => {
-                                    tspan = $(tspan);
-                                    let key = tspan.text();
-                                    if (key.startsWith("$")) {
-                                        key = key.substring(1);
-                                        tspan.addClass("register-bound " + key);
-                                    }
-                                });
-                                updateAllRegisters();
+                    DIV("schema", span => {
+                        $.get("schema.svg", svg => {
+                            let svgStr = (new window.XMLSerializer()).serializeToString(svg);
+                            span.html(svgStr);
+                            span.find("tspan").each((i, tspan) => {
+                                tspan = $(tspan);
+                                let key = tspan.text();
+                                if (key.startsWith("$")) {
+                                    key = key.substring(1);
+                                    tspan.addClass("register-bound " + key);
+                                }
                             });
-                        }),
-                        systemErrors
+                            updateAllRegisters();
+                        });
+                    }),
+                    systemErrors
                 ])
             ])
                 .onRegisterChanged(cr => {
