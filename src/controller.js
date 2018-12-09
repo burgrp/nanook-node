@@ -69,7 +69,7 @@ module.exports = async config => {
                 if (isNaN(reg.value)) throw "has no value";
                 if (reg.error) throw "is in error state: " + reg.error;
                 if (reg.value < min) throw `value ${reg.value} under it's minimum ${min}`;
-                if (reg.value > max) throw `value ${reg.value} under it's maximum ${max}`;
+                if (reg.value > max) throw `value ${reg.value} over it's maximum ${max}`;
             } catch (e) {
                 let message = `Register ${reg.name} ${e.message || e}`;
                 setSystemError(`registerCheck-${reg.name}`, message);
@@ -77,7 +77,7 @@ module.exports = async config => {
             }
         }
 
-        checkRegister(registers.coldFrigoPressure, 0, 4);
+        checkRegister(registers.coldFrigoPressure, 0, 25);
         checkRegister(registers.hotFrigoPressure, 0, 25);
         checkRegister(registers.psLow, true, true);
         checkRegister(registers.psHigh, true, true);
