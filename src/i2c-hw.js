@@ -21,8 +21,8 @@ module.exports = config => {
                     async write(address, data) {
                         let buffer = Buffer.from(data);
                         let written = await bus.write(parseInt(address), data.length, buffer);
-                        if (written !== length) {
-                            throw `Could write only ${read} bytes from ${length}`;
+                        if (written !== data.length) {
+                            throw `Could write only ${read} bytes from ${data.length}`;
                         }
                     },
 
