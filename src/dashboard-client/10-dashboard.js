@@ -46,17 +46,26 @@ wg.pages.home = {
         }
 
         let controls = {
-            sequenceInProgress: startStopButtons(async s => await (s? wg.dashboard.start:wg.dashboard.stop)(s), true),
+            sequenceInProgress: startStopButtons(async s => await (s ? wg.dashboard.start : wg.dashboard.stop)(s), true),
             coldWaterPump: startStopButtons(async s => await wg.dashboard.setColdWaterPump(s)),
             hotWaterPump: startStopButtons(async s => await wg.dashboard.setHotWaterPump(s)),
+            manualControl: startStopButtons(async s => await wg.dashboard.setRegister("manualControl", s)),
             eevPosition: [
                 eevButton("OP", -500, true),
                 eevButton("<<", -50, false),
-                eevButton("<", -10, false),
-                eevButton(">", 10, false),
+                eevButton("<", -5, false),
+                eevButton(">", 5, false),
                 eevButton(">>", 50, false),
                 eevButton("CL", 500, true)
             ]
+        }
+
+        let convertDate = d => d? new Date(d).toLocaleString(): "-";
+
+        let converters = {
+                sequenceInProgress:  v => v? v.toUpperCase(): "NONE",
+                startedAt: convertDate ,
+                stoppedAt: convertDate
         }
 
         let systemErrors = DIV("system-errors");
@@ -85,6 +94,8 @@ wg.pages.home = {
             $(".register-bound." + register.key)
                 .text(
                     (
+                        converters[register.key]? 
+                                converters[register.key](register.value):
                         register.value instanceof Object ?
                             register.value.key ?
                                 register.value.key :
@@ -107,9 +118,9 @@ wg.pages.home = {
                 $("#svg-compressor").css("fill", `rgb(0, 160, 100, ${alpha})`);
             }
 
-            if (register.key === "eevPosition") {
-                $("#eevPosition").val(register.value);
-            }
+//             if (register.key === "eevPosition") {
+//                 $("#eevPosition").val(register.value);
+//             }
 
         }
 
@@ -122,7 +133,6 @@ wg.pages.home = {
             SPAN("dashboard", [
                 DIV("registers",
                     Object.values(registers)
-                        .filter(register => register.key !== "systemErrors")
                         .map(register =>
                             SPAN("register", [
                                 SPAN("name").text(register.name),

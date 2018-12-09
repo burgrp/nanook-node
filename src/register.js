@@ -25,9 +25,10 @@ module.exports = (key, name, value, unit) => {
         },
 
         async set(value, error) {
+            error = error ? error.message || error : undefined;
             if (this.value !== value || this.error !== error) {
                 this.value = value;
-                this.error = error ? error.message || error : undefined;
+                this.error = error;
                 for (let listener of listeners) {
                     await checkedListener(listener, this);
                 }    
