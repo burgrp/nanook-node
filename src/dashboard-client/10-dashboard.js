@@ -142,6 +142,7 @@ wg.pages.home = {
                         )
                 ),
                 DIV("schema-errors", [
+                    DIV("logo"),
                     DIV("schema", span => {
                         $.get("schema.svg", svg => {
                             let svgStr = (new window.XMLSerializer()).serializeToString(svg);
