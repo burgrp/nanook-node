@@ -17,6 +17,7 @@ module.exports = async config => {
         createRegister("superheatTarget", "Superheat Target", config.superheat, "°C"),
         createRegister("startedAt", "Started At"),
         createRegister("stoppedAt", "Stopped At"),
+        createRegister("targetTemp", "Target Temperature", 50, "°C"),
         ...peripherals.registers
     ];
 
@@ -42,7 +43,6 @@ module.exports = async config => {
         delete systemErrors[key];
         systemErrorsUpdated();
     }
-
 
     function setSystemError(key, message) {
         if (systemErrors[key] !== message) {
@@ -115,7 +115,7 @@ module.exports = async config => {
         let saturationTemp = getSaturationTempC(registers.coldFrigoPressure.value + 1);
         await registers.evaporationTemp.set(saturationTemp);
         let superheatActual = registers.coldFrigoOutTemp.value - saturationTemp;
-        await registers.superheatActual.set(isNaN(superheatActual)? undefined: superheatActual);
+        await registers.superheatActual.set(isNaN(superheatActual) ? undefined : superheatActual);
     }
 
     registers.coldFrigoPressure.watch(updateActualSuperheat);
@@ -150,11 +150,13 @@ module.exports = async config => {
             sequenceInProgress = sequenceName;
             notifySequenceChange();
 
-            await cb();
+            let result = await cb();
             console.info(`Sequence '${sequenceName}' finished.`);
 
             sequenceInProgress = undefined;
             notifySequenceChange();
+
+            return result;
 
         } catch (e) {
 
@@ -259,6 +261,61 @@ module.exports = async config => {
         }
         lastSuperheat = actual;
     }, 1000 * (config.eevIntervalSec || 5));
+
+    function scheduleTempCheck(scheduleMs) {
+        setTimeout(async () => {
+            try {
+                console.info("Temp check", registers.targetTemp.value);
+                let nowMs = new Date().getTime();
+
+                if (registers.compressorRelay.value === true) {
+                    // check for stop
+
+                } else {
+
+                    // check for start
+
+                    if (registers.targetTemp.value) {
+                        
+                        let minStopTimeMs = (config.minStopTimeMin || 3) *60 * 1000;
+                        let stopTimeMs = nowMs - (registers.stoppedAt.value && registers.stoppedAt.value.getTime());
+                        if (stopTimeMs < minStopTimeMs) {
+                            console.info(`Need to wait another ${(minStopTimeMs - stopTimeMs) / 1000} seconds for minimum stop time`);
+                        } else {
+                            
+                            let hotWaterInTemp = await runSequence("measure", async () => {
+                                let previousHotWaterPump = registers.hotWaterPump.value;
+                                if (previousHotWaterPump === undefined) {
+                                    throw "Unknown state of hot water pump";
+                                }
+
+                                await peripherals.setHotWaterPump(true);
+                                await asyncWait((config.tempCheckPumpTimeSec || 30) * 1000);
+                                let temp = registers.hotWaterInTemp.value;
+                                await peripherals.setHotWaterPump(previousHotWaterPump);
+                                return temp;
+                            });
+
+                            console.info("Measured inlet water temperature is", hotWaterInTemp);
+                            if (registers.targetTemp.value > hotWaterInTemp + (config.startOffsetTemp || 3)) {
+                                await start();
+                            }
+
+                        }
+                        
+
+                    }
+
+                }
+            } catch (e) {
+                console.error("Exception in temp check", e);
+                setSystemError("tempCheck", e.message || e);
+            }
+            scheduleTempCheck(1000 * (config.tempCheckIntervalSec || (60 * 5)));
+        }, scheduleMs);
+    }
+
+    scheduleTempCheck(5000);
 
     return {
 
