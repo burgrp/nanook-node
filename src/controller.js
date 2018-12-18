@@ -17,7 +17,7 @@ module.exports = async config => {
         createRegister("superheatTarget", "Superheat Target", config.superheat, "°C"),
         createRegister("startedAt", "Started At"),
         createRegister("stoppedAt", "Stopped At"),
-        createRegister("targetTemp", "Target Temperature", 50, "°C"),
+        createRegister("targetTemp", "Target Temperature", 48, "°C"),
         ...peripherals.registers
     ];
 
@@ -87,7 +87,7 @@ module.exports = async config => {
     async function checkRegistersAndStop() {
         if (registers.compressorRelay.value === true) {
             try {
-                checkRegisters();
+                //checkRegisters();
             } catch (e) {
                 await stop();
             }
@@ -247,7 +247,7 @@ module.exports = async config => {
             let stepsPerC = config.eevStepsPerC || 1;
             let target = registers.superheatTarget.value;
             let steps = Math.round(((target - actual) - (actual - (lastSuperheat === undefined ? actual : lastSuperheat)) * 2 / 3) * stepsPerC);
-            let maxSteps = config.eevMaxStepsPerCheck || 2;
+            let maxSteps = config.eevMaxStepsPerCheck || 10;
             if (steps > maxSteps) {
                 steps = maxSteps;
             }
@@ -262,60 +262,87 @@ module.exports = async config => {
         lastSuperheat = actual;
     }, 1000 * (config.eevIntervalSec || 5));
 
-    function scheduleTempCheck(scheduleMs) {
+    function scheduleTargetTempStart(scheduleMs) {
         setTimeout(async () => {
-            try {
-                console.info("Temp check", registers.targetTemp.value);
-                let nowMs = new Date().getTime();
+            if (registers.targetTemp.value && registers.compressorRelay.value === false) {
+                try {
 
-                if (registers.compressorRelay.value === true) {
-                    // check for stop
-
-                } else {
+                    console.info("Target temp start check", registers.targetTemp.value);
+                    let nowMs = new Date().getTime();
 
                     // check for start
 
-                    if (registers.targetTemp.value) {
-                        
-                        let minStopTimeMs = (config.minStopTimeMin || 3) *60 * 1000;
-                        let stopTimeMs = nowMs - (registers.stoppedAt.value && registers.stoppedAt.value.getTime());
-                        if (stopTimeMs < minStopTimeMs) {
-                            console.info(`Need to wait another ${(minStopTimeMs - stopTimeMs) / 1000} seconds for minimum stop time`);
-                        } else {
-                            
-                            let hotWaterInTemp = await runSequence("measure", async () => {
-                                let previousHotWaterPump = registers.hotWaterPump.value;
-                                if (previousHotWaterPump === undefined) {
-                                    throw "Unknown state of hot water pump";
-                                }
+                    let minIdleTimeMs = (config.minIdleTimeMin || 3) * 60 * 1000;
+                    let idleTimeMs = nowMs - (registers.stoppedAt.value && registers.stoppedAt.value.getTime());
+                    if (idleTimeMs < minIdleTimeMs) {
+                        console.info(`Need to wait another ${(minIdleTimeMs - idleTimeMs) / 1000} seconds for minimum idle time`);
+                    } else {
 
-                                await peripherals.setHotWaterPump(true);
-                                await asyncWait((config.tempCheckPumpTimeSec || 30) * 1000);
-                                let temp = registers.hotWaterInTemp.value;
-                                await peripherals.setHotWaterPump(previousHotWaterPump);
-                                return temp;
-                            });
-
-                            console.info("Measured inlet water temperature is", hotWaterInTemp);
-                            if (registers.targetTemp.value > hotWaterInTemp + (config.startOffsetTemp || 3)) {
-                                await start();
+                        let hotWaterInTemp = await runSequence("measure", async () => {
+                            let previousHotWaterPump = registers.hotWaterPump.value;
+                            if (previousHotWaterPump === undefined) {
+                                throw "Unknown state of hot water pump";
                             }
 
+                            await peripherals.setHotWaterPump(true);
+                            await asyncWait((config.tempCheckPumpTimeSec || 30) * 1000);
+                            let temp = registers.hotWaterInTemp.value;
+                            await peripherals.setHotWaterPump(previousHotWaterPump);
+                            return temp;
+                        });
+
+                        console.info("Measured inlet water temperature is", hotWaterInTemp);
+                        if (registers.targetTemp.value > hotWaterInTemp + (config.startOffsetTemp || 3)) {
+                            await start();
                         }
-                        
 
                     }
-
+                } catch (e) {
+                    console.error("Exception in target temp start check", e);
+                    setSystemError("targetTempStartCheck", e.message || e);
                 }
-            } catch (e) {
-                console.error("Exception in temp check", e);
-                setSystemError("tempCheck", e.message || e);
             }
-            scheduleTempCheck(1000 * (config.tempCheckIntervalSec || (60 * 5)));
+            scheduleTargetTempStart(1000 * (config.targetTempStopCheckSec || (5 * 60)));
         }, scheduleMs);
     }
 
-    scheduleTempCheck(5000);
+    function scheduleTargetTempStop() {
+        setTimeout(async () => {
+            if (registers.targetTemp.value && registers.compressorRelay.value === true) {
+                try {
+
+                    console.info("Target temp stop check", registers.targetTemp.value);
+                    let nowMs = new Date().getTime();
+
+                    // check for stop
+
+                    let minRunTimeMs = (config.minRunTimeMin || 7) * 60 * 1000;
+                    let runTimeMs = nowMs - (registers.startedAt.value && registers.startedAt.value.getTime());
+                    if (runTimeMs < minRunTimeMs) {
+                        console.info(`Need to wait another ${(minRunTimeMs - runTimeMs) / 1000} seconds for minimum run time`);
+                    } else {
+
+                        let hotWaterOutTemp = registers.hotWaterOutTemp.value;
+                        console.info("Current outlet water temperature is", hotWaterOutTemp);
+                        if (
+                            (hotWaterOutTemp > registers.targetTemp.value + (config.stopOffsetTemp || 10)) ||
+                            (hotWaterOutTemp > (config.maxHotWaterOutTemp || 62))
+                        ) {
+                            await stop();
+                        }
+
+                    }
+                } catch (e) {
+                    console.error("Exception in target temp stop check", e);
+                    setSystemError("targetTempStopCheck", e.message || e);
+                }
+            }
+            scheduleTargetTempStop();
+        }, 1000 * (config.targetTempStopCheckSec || 10));
+    }
+
+    scheduleTargetTempStart(5000);
+    scheduleTargetTempStop();
 
     return {
 
