@@ -17,7 +17,7 @@ module.exports = async config => {
         createRegister("superheatTarget", "Superheat Target", config.superheat, "°C"),
         createRegister("startedAt", "Started At"),
         createRegister("stoppedAt", "Stopped At"),
-        createRegister("targetTemp", "Target Temperature", 48, "°C"),
+        createRegister("targetTemp", "Target Temperature", 55, "°C"),
         ...peripherals.registers
     ];
 
@@ -262,13 +262,18 @@ module.exports = async config => {
         lastSuperheat = actual;
     }, 1000 * (config.eevIntervalSec || 5));
 
+
+    let targetTempMaxError = config.targetTempMaxError || 3;
+    let avgOutputTempRise = config.avgOutputTempRise || 10;
+    let maxOutputTemp = config.maxOutputTemp || 62;
+
     function scheduleTargetTempStart(scheduleMs) {
         setTimeout(async () => {
             if (registers.targetTemp.value && registers.compressorRelay.value === false) {
                 try {
-
-                    console.info("Target temp start check", registers.targetTemp.value);
+                    let targetTemp = registers.targetTemp.value;
                     let nowMs = new Date().getTime();
+                    console.info("Target temp start check", targetTemp);
 
                     // check for start
 
@@ -291,8 +296,10 @@ module.exports = async config => {
                             return temp;
                         });
 
-                        console.info("Measured inlet water temperature is", hotWaterInTemp);
-                        if (registers.targetTemp.value > hotWaterInTemp + (config.startOffsetTemp || 3)) {
+                        let startTemp = targetTemp - avgOutputTempRise - targetTempMaxError;
+
+                        console.info("Water inlet temperature is", hotWaterInTemp, "will start at", startTemp);
+                        if (hotWaterInTemp <= startTemp) {
                             await start();
                         }
 
@@ -302,7 +309,7 @@ module.exports = async config => {
                     setSystemError("targetTempStartCheck", e.message || e);
                 }
             }
-            scheduleTargetTempStart(1000 * (config.targetTempStopCheckSec || (5 * 60)));
+            scheduleTargetTempStart(1000 * (config.targetTempStartCheckSec || (5 * 60)));
         }, scheduleMs);
     }
 
@@ -310,9 +317,9 @@ module.exports = async config => {
         setTimeout(async () => {
             if (registers.targetTemp.value && registers.compressorRelay.value === true) {
                 try {
-
-                    console.info("Target temp stop check", registers.targetTemp.value);
+                    let targetTemp = registers.targetTemp.value;
                     let nowMs = new Date().getTime();
+                    console.info("Target temp stop check", targetTemp);
 
                     // check for stop
 
@@ -322,11 +329,12 @@ module.exports = async config => {
                         console.info(`Need to wait another ${(minRunTimeMs - runTimeMs) / 1000} seconds for minimum run time`);
                     } else {
 
-                        let hotWaterOutTemp = registers.hotWaterOutTemp.value;
-                        console.info("Current outlet water temperature is", hotWaterOutTemp);
+                        let hotWaterOutTemp = registers.hotWaterOutTemp.value;                        
+                        let stopTemp = Math.min(targetTemp + targetTempMaxError, maxOutputTemp);
+
+                        console.info("Water outlet temperature is", hotWaterOutTemp, "will stop at", stopTemp);
                         if (
-                            (hotWaterOutTemp > registers.targetTemp.value + (config.stopOffsetTemp || 10)) ||
-                            (hotWaterOutTemp > (config.maxHotWaterOutTemp || 62))
+                            (hotWaterOutTemp >= stopTemp)
                         ) {
                             await stop();
                         }
