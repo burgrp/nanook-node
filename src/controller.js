@@ -17,7 +17,7 @@ module.exports = async config => {
         createRegister("superheatTarget", "Superheat Target", config.superheat, "°C"),
         createRegister("startedAt", "Started At"),
         createRegister("stoppedAt", "Stopped At"),
-        createRegister("targetTemp", "Target Temperature", 55, "°C"),
+        createRegister("targetTemp", "Target Temperature", 50, "°C"),
         ...peripherals.registers
     ];
 
@@ -87,7 +87,7 @@ module.exports = async config => {
     async function checkRegistersAndStop() {
         if (registers.compressorRelay.value === true) {
             try {
-                //checkRegisters();
+                checkRegisters();
             } catch (e) {
                 await stop();
             }
@@ -263,7 +263,7 @@ module.exports = async config => {
     }, 1000 * (config.eevIntervalSec || 5));
 
 
-    let targetTempMaxError = config.targetTempMaxError || 3;
+    let targetTempMaxError = config.targetTempMaxError || 4;
     let avgOutputTempRise = config.avgOutputTempRise || 10;
     let maxOutputTemp = config.maxOutputTemp || 62;
 
