@@ -48,7 +48,7 @@ module.exports = async config => {
             if (voltage < 0.35) {
                 throw `Pressure transducer voltage ${voltage} too low`;
             }
-            voltage = Math.round(voltage * 100) / 100;
+            voltage = Math.round(voltage * 20) / 20;
 
             let value = (voltage - 0.5) / 4 * (transducerParams.max - transducerParams.min) + transducerParams.min + (transducerParams.calibration || 0);
             noiseBuffer.push(value);
