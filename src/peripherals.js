@@ -134,13 +134,13 @@ module.exports = async config => {
                     if (data.some(b => b !== 0xFF)) {
                         return data;
                     }
-                    console.error("OBP reads as all 0xFF, retrying...");                    
+                    console.error("OBP reads as all 0xFF, retrying...");
                 }
                 throw "On board peripherals controller reads as all 0xFF"
             }
 
             let obpData = Buffer.from(await readAndCheckFF());
-            
+
             let outputs = obpData.readUInt8(0);
             await compressorRelay.set((outputs & 1) != 0);
             await coldWaterPump.set((outputs & 2) != 0);
@@ -217,12 +217,25 @@ module.exports = async config => {
             await i2c.write(obpAddress, [3, 2, state ? 1 : 0]);
         },
 
+        async setRgbLed(led) {
+            console.log("RGB LED =>", JSON.stringify(led));
+            await i2c.write(obpAddress, [1, led.rampUpTime, led.onTime, led.rampDownTime, led.offTime, ...led.rgb]);
+        },
+
         async eevRun(fullSteps, fast) {
             console.info("EEV to run " + fullSteps + " steps" + (fast ? " fast" : ""));
             let buffer = Buffer.alloc(1 + 2 + 1);
             buffer.writeUInt8(2, 0);
             buffer.writeInt16LE(fullSteps, 1);
             buffer.writeUInt8(fast ? 1 : 0, 3);
+            await i2c.write(obpAddress, [...buffer]);
+        },
+
+        async setEevPosition(position) {
+            console.info("Reseting EEV position to", position);
+            let buffer = Buffer.alloc(1 + 4);
+            buffer.writeUInt8(4, 0);
+            buffer.writeInt32LE(position, 1);
             await i2c.write(obpAddress, [...buffer]);
         }
     }

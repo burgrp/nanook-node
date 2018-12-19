@@ -29,7 +29,32 @@ module.exports = async config => {
     let systemErrors = {};
     let systemErrorsListeners = [];
 
+    async function updateRgbLed() {
+
+        function getLed() {
+
+            // Error
+            if (Object.keys(systemErrors).length) return { rampUpTime: 5, onTime: 5, rampDownTime: 5, offTime: 5, rgb: [255, 0, 0] };
+
+            // Measure
+            if (registers.sequenceInProgress.value === "measure") return { rampUpTime: 10, onTime: 10, rampDownTime: 10, offTime: 0, rgb: [0, 100, 255] };
+
+            // Start
+            if (registers.sequenceInProgress.value === "start") return { rampUpTime: 10, onTime: 10, rampDownTime: 10, offTime: 0, rgb: [0, 255, 100] };
+
+            // Running
+            if (registers.compressorRelay.value) return { rampUpTime: 100, onTime: 100, rampDownTime: 50, offTime: 5, rgb: [0, 255, 100] };
+
+            // Stand by
+            return { rampUpTime: 200, onTime: 0, rampDownTime: 200, offTime: 20, rgb: [255, 255, 255] };
+        }
+
+        await peripherals.setRgbLed(getLed());
+    }
+
+
     function systemErrorsUpdated() {
+        updateRgbLed().catch(console.error);
         systemErrorsListeners.forEach(listener => {
             try {
                 listener(systemErrors);
@@ -132,8 +157,15 @@ module.exports = async config => {
     let sequenceInProgress;
 
     function notifySequenceChange() {
-        // don't wait for register update - it's for UI only
-        registers.sequenceInProgress.set(sequenceInProgress).catch(console.error);
+        async function doAsync() {
+            try {
+                await registers.sequenceInProgress.set(sequenceInProgress);
+                await updateRgbLed();
+            } catch (e) {
+                console.error("Error in notifySequenceChange", e);
+            }
+        }
+        doAsync().catch(console.error);
     }
 
     async function runSequence(sequenceName, cb) {
@@ -329,7 +361,7 @@ module.exports = async config => {
                         console.info(`Need to wait another ${(minRunTimeMs - runTimeMs) / 1000} seconds for minimum run time`);
                     } else {
 
-                        let hotWaterOutTemp = registers.hotWaterOutTemp.value;                        
+                        let hotWaterOutTemp = registers.hotWaterOutTemp.value;
                         let stopTemp = Math.min(targetTemp + targetTempMaxError, maxOutputTemp);
 
                         console.info("Water outlet temperature is", hotWaterOutTemp, "will stop at", stopTemp);
@@ -351,6 +383,8 @@ module.exports = async config => {
 
     scheduleTargetTempStart(5000);
     scheduleTargetTempStop();
+
+    await updateRgbLed();
 
     return {
 
@@ -380,6 +414,14 @@ module.exports = async config => {
 
         async clearSystemError(key) {
             clearSystemError(key);
+        },
+
+        async setEevPosition(position) {
+            await peripherals.setEevPosition(position);
+        },
+
+        async setRgbLed(led) {
+            await peripherals.setRgbLed(led);
         }
     }
 }

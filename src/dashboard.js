@@ -42,6 +42,14 @@ module.exports = async config => {
 
                 async stop() {
                     await config.controller.stop();
+                },
+
+                async setEevPosition(position) {
+                    await config.controller.setEevPosition(position);
+                },
+
+                async setRgbLed(led) {
+                    await config.controller.setRgbLed(led);
                 }
 
             }
