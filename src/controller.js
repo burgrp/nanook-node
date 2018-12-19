@@ -269,7 +269,7 @@ module.exports = async config => {
 
     function scheduleTargetTempStart(scheduleMs) {
         setTimeout(async () => {
-            if (registers.targetTemp.value && registers.compressorRelay.value === false) {
+            if (!registers.manualControl.value && registers.targetTemp.value && registers.compressorRelay.value === false) {
                 try {
                     let targetTemp = registers.targetTemp.value;
                     let nowMs = new Date().getTime();
@@ -315,7 +315,7 @@ module.exports = async config => {
 
     function scheduleTargetTempStop() {
         setTimeout(async () => {
-            if (registers.targetTemp.value && registers.compressorRelay.value === true) {
+            if (!registers.manualControl.value && registers.targetTemp.value && registers.compressorRelay.value === true) {
                 try {
                     let targetTemp = registers.targetTemp.value;
                     let nowMs = new Date().getTime();

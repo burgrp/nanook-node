@@ -45,6 +45,10 @@ wg.pages.home = {
             return BUTTON().text(text).click(e => checkAction(async () => await wg.dashboard.eevRun(change, fast)))
         }
 
+        function targetTempButton(text, change) {
+            return BUTTON().text(text).click(e => checkAction(async () => await wg.dashboard.setRegister("targetTemp", registers.targetTemp.value + change)));
+        }
+
         let controls = {
             sequenceInProgress: startStopButtons(async s => await (s ? wg.dashboard.start : wg.dashboard.stop)(s), true),
             coldWaterPump: startStopButtons(async s => await wg.dashboard.setColdWaterPump(s)),
@@ -57,6 +61,12 @@ wg.pages.home = {
                 eevButton(">", 5, false),
                 eevButton(">>", 50, false),
                 eevButton("CL", 500, true)
+            ],
+            targetTemp: [
+                targetTempButton("<<", -5),
+                targetTempButton("<", -1),
+                targetTempButton(">", 1),
+                targetTempButton(">>", 5)
             ]
         }
 
