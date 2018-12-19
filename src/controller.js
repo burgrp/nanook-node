@@ -86,6 +86,7 @@ module.exports = async config => {
         });
     });
 
+    registers.coldFrigoPressure.watch(r => console.info(">>>>>>>>>>", r.value));
 
     function checkRegisters() {
 
