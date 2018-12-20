@@ -1,5 +1,7 @@
 wg.pages.home = {
 
+    title: "NANOOK",
+
     async render(container) {
 
         let registers = await wg.dashboard.getRegisters();
@@ -45,8 +47,8 @@ wg.pages.home = {
             return BUTTON().text(text).click(e => checkAction(async () => await wg.dashboard.eevRun(change, fast)))
         }
 
-        function targetTempButton(text, change) {
-            return BUTTON().text(text).click(e => checkAction(async () => await wg.dashboard.setRegister("targetTemp", registers.targetTemp.value + change)));
+        function regSpinButton(text, change, reg) {
+            return BUTTON().text(text).click(e => checkAction(async () => await wg.dashboard.setRegister(reg.key, reg.value + change)));
         }
 
         let controls = {
@@ -63,10 +65,14 @@ wg.pages.home = {
                 eevButton("CL", 500, true)
             ],
             targetTemp: [
-                targetTempButton("<<", -5),
-                targetTempButton("<", -1),
-                targetTempButton(">", 1),
-                targetTempButton(">>", 5)
+                regSpinButton("<<", -5, registers.targetTemp),
+                regSpinButton("<", -1, registers.targetTemp),
+                regSpinButton(">", 1, registers.targetTemp),
+                regSpinButton(">>", 5, registers.targetTemp)
+            ],
+            superheatTarget: [
+                regSpinButton("<", -1, registers.superheatTarget),
+                regSpinButton(">", 1, registers.superheatTarget),
             ]
         }
 
