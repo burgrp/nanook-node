@@ -205,6 +205,10 @@
             ]
         }
     },
+    "dfReg": {
+        "module": "./df-reg.js",
+        "registers": "-> controller.registers"
+    },
     "web": {
         "module": "@device.farm/webglue",
         "httpPort": "-> $.HTTP_PORT",
