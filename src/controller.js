@@ -294,7 +294,7 @@ module.exports = async config => {
     }, 1000 * (config.eevIntervalSec || 5));
 
 
-    let targetTempMaxError = config.targetTempMaxError || 4;
+    let targetTempMaxError = config.targetTempMaxError || 2;
     let avgOutputTempRise = config.avgOutputTempRise || 10;
     let maxOutputTemp = config.maxOutputTemp || 62;
 
