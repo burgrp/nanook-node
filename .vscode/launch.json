@@ -6,6 +6,15 @@
     "configurations": [
         {
             "type": "node",
+            "request": "launch",
+            "name": "NANOOK - local",
+            "program": "${workspaceFolder}/src/main.js",
+            "env": {
+                "I2C_BUS": "usb"
+            }
+        },
+        {
+            "type": "node",
             "request": "attach",
             "name": "NANOOK - remote",
             "address": "nanook.local",

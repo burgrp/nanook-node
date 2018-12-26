@@ -207,6 +207,7 @@
     },
     "dfReg": {
         "module": "./df-reg.js",
+        "broker": "-> $.MQTT",
         "registers": "-> controller.registers"
     },
     "web": {

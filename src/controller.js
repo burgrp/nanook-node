@@ -49,7 +49,11 @@ module.exports = async config => {
             return { rampUpTime: 200, onTime: 0, rampDownTime: 200, offTime: 20, rgb: [255, 255, 255] };
         }
 
-        await peripherals.setRgbLed(getLed());
+        try {
+            await peripherals.setRgbLed(getLed());
+        } catch (e) {
+            console.error("Error while updating RGB LED", e);
+        }
     }
 
 
