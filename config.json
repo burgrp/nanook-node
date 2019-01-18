@@ -53,7 +53,7 @@
                     "address": "0x4F"
                 }
             },
-            "ias3a": {
+            "analogSensors": {
                 "cold": {
                     "name": "Cold Side",
                     "address": "0x70",

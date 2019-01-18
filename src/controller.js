@@ -1,5 +1,6 @@
 const createRegister = require("./register.js");
 const asyncWait = require("./async-wait.js");
+const deepEqual = require("fast-deep-equal");
 
 module.exports = async config => {
 
@@ -29,9 +30,10 @@ module.exports = async config => {
     let systemErrors = {};
     let systemErrorsListeners = [];
 
+    let ledSetting;
     async function updateRgbLed() {
 
-        function getLed() {
+        function getLedSetting() {
 
             // Error
             if (Object.keys(systemErrors).length) return { rampUpTime: 5, onTime: 5, rampDownTime: 5, offTime: 5, rgb: [255, 0, 0] };
@@ -50,7 +52,11 @@ module.exports = async config => {
         }
 
         try {
-            await peripherals.setRgbLed(getLed());
+            let newSetting = getLedSetting();
+            if (!deepEqual(newSetting, ledSetting)) {
+                ledSetting = newSetting;
+                await peripherals.setRgbLed(ledSetting);
+            }            
         } catch (e) {
             console.error("Error while updating RGB LED", e);
         }

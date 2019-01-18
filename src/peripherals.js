@@ -24,9 +24,9 @@ module.exports = async config => {
         registers.push(register);
     });
 
-    Object.entries(config.ias3a).forEach(([key, registerConfig]) => {
+    Object.entries(config.analogSensors).forEach(([key, registerConfig]) => {
 
-        function iasSensor(keySuffix, name, converter, unit) {
+        function createSensor(keySuffix, name, converter, unit) {
             let register = createRegister(key + keySuffix, registerConfig.name + " " + name, undefined, unit);
 
             let noiseBuffer = [];
@@ -66,27 +66,30 @@ module.exports = async config => {
             return Math.round(sum / cnt * 100) / 100;
         }
 
-        let iasSensors = [
-            iasSensor("WaterFlow", "Water Flow", convertFlow, "l/h"),
-            iasSensor("WaterPressure", "Water Pressure", convertPressure, "bar"),
-            iasSensor("FrigoPressure", "Refrigerant Pressure", convertPressure, "bar")
+        let sensors = [
+            createSensor("WaterFlow", "Water Flow", convertFlow, "l/h"),
+            createSensor("WaterPressure", "Water Pressure", convertPressure, "bar"),
+            createSensor("FrigoPressure", "Refrigerant Pressure", convertPressure, "bar")
         ];
 
-        registers.push(...iasSensors);
+        registers.push(...sensors);
 
         tickers.push(async () => {
             try {
-                let data = Buffer.from(await i2c.read(registerConfig.address, 6));
-                for (let c in iasSensors) {
+                let data = Buffer.from(await i2c.read(registerConfig.address, (7 + 2) * 2));
+                let vRefIntData = data.readUInt16LE(7 * 2);
+                let vRefIntCal = data.readUInt16LE(8 * 2);
+                console.info(key, vRefIntCal, vRefIntData);
+                for (let c in sensors) {
                     try {
-                        await iasSensors[c].setRaw(data.readUInt16LE(c * 2));
+                        await sensors[c].setRaw(data.readUInt16LE(c * 2));
                     } catch (e) {
-                        await iasSensors[c].failed(e.message || e);
+                        await sensors[c].failed(e.message || e);
                     }
                 }
             } catch (e) {
-                for (let c in iasSensors) {
-                    await iasSensors[c].failed(e.message || e);
+                for (let c in sensors) {
+                    await sensors[c].failed(e.message || e);
                 }
             }
         });
@@ -126,19 +129,7 @@ module.exports = async config => {
     tickers.push(async () => {
         try {
 
-            //TODO why it fails sometimes?
-            async function readAndCheckFF() {
-                for (let a = 0; a < 10; a++) {
-                    let data = await i2c.read(obpAddress, 1 + 1 + 4);
-                    if (data.some(b => b !== 0xFF)) {
-                        return data;
-                    }
-                    console.error("OBP reads as all 0xFF, retrying...");
-                }
-                throw "On board peripherals controller reads as all 0xFF"
-            }
-
-            let obpData = Buffer.from(await readAndCheckFF());
+            let obpData = Buffer.from(await i2c.read(obpAddress, 1 + 1 + 4));
 
             let outputs = obpData.readUInt8(0);
             await compressorRelay.set((outputs & 1) != 0);
@@ -175,19 +166,18 @@ module.exports = async config => {
     });
 
     async function tick() {
-        for (let ticker of tickers) {
-            await ticker();
-        }
     };
 
     function scheduleNextTick() {
-        setTimeout(() => {
-            tick().then(() => {
-                scheduleNextTick();
-            }).catch(e => {
+        setTimeout(async () => {
+            try {
+                for (let ticker of tickers) {
+                    await ticker();
+                }
+            } catch (e) {
                 console.error(e);
-                scheduleNextTick();
-            });
+            }
+            scheduleNextTick();
         }, config.tickMs);
     }
 

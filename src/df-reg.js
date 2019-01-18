@@ -5,6 +5,6 @@ module.exports = async config => {
     }
 
     Object.entries(config.registers).forEach(([name, reg]) => {
-        console.info(name);    
+        //console.info(name);    
     });
 };
