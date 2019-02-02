@@ -31,7 +31,7 @@ module.exports = config => {
             try {
                 return await action(i2c);
             } catch (e) {
-                if (attempt > 5) {
+                if (attempt > 0) {
                     throw e;
                 }
                 attempt++;

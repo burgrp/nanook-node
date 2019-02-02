@@ -1,5 +1,6 @@
 const createRegister = require("./register.js");
 const asyncWait = require("./async-wait.js");
+const ntcData = require("./ntc-10k-3950.json");
 
 module.exports = async config => {
 
@@ -11,28 +12,13 @@ module.exports = async config => {
     let registers = [];
     let tickers = [];
 
-    Object.entries(config.lm75a).forEach(([key, registerConfig]) => {
-        let register = createRegister(key + "Temp", registerConfig.name + " Temperature", undefined, "°C");
-        tickers.push(async () => {
-            try {
-                let data = Buffer.from(await i2c.read(registerConfig.address, 2));
-                await register.set((0.125 * data.readInt16BE()) / 32);
-            } catch (e) {
-                await register.failed(e.message || e);
-            }
-        });
-        registers.push(register);
-    });
-
     Object.entries(config.analogSensors).forEach(([key, registerConfig]) => {
 
         function createSensor(keySuffix, name, converter, unit) {
             let register = createRegister(key + keySuffix, registerConfig.name + " " + name, undefined, unit);
 
-            let noiseBuffer = [];
-
-            register.setRaw = async (raw) => {
-                let value = raw === 0xFFFF ? undefined : converter(raw, registerConfig["transducer" + keySuffix], noiseBuffer);
+            register.setRaw = async (raw, vcc) => {
+                let value = converter(raw, registerConfig["transducer" + keySuffix], vcc);
                 register.set(value);
             };
 
@@ -43,33 +29,47 @@ module.exports = async config => {
             return transducerParams.mlPerRev * raw * 60 * 60 / 1000;
         }
 
-        function convertPressure(raw, transducerParams, noiseBuffer) {
-            let voltage = 5 * raw / 4096;
-            if (voltage < 0.35) {
-                throw `Pressure transducer voltage ${voltage} too low`;
+        function convertPressure(raw, transducerParams, vcc) {
+            let r1 = transducerParams.r1 || 4700;
+            let r2 = transducerParams.r2 || 10000;
+            let u2 = vcc * raw / 4095;
+            let u = u2 * (r1 + r2) / r2;
+            if (u < 0.2) {
+                throw "Pressure sensor disconnected";
+            }
+            let pressure = (u - 0.5) / 4 * (transducerParams.max - transducerParams.min) + transducerParams.min;
+            return pressure;
+        }
+
+        function convertTemperature(raw, transducerParams) {
+            if (raw === 0) {
+                throw "NTC sensor disconnected";
+            }
+            let r = transducerParams.r2 * (4095 - raw) / raw;
+
+            for (let i in ntcData) {
+                if (ntcData[i][1] === r) {
+                    return ntcData[i][0];
+                } else if (ntcData[i][1] < r) {
+                    let r0 = ntcData[i - 1][1];
+                    let t0 = ntcData[i - 1][0];
+                    let r1 = ntcData[i][1];
+                    let t1 = ntcData[i][0];
+                    return (r - r0) / (r1 - r0) * (t1 - t0) + t0;
+                }
             }
 
-            let value = (voltage - 0.5) / 4 * (transducerParams.max - transducerParams.min) + transducerParams.min + (transducerParams.calibration || 0);
-            noiseBuffer.push(value);
-
-            while (noiseBuffer.length > 5) {
-                noiseBuffer.shift();
-            }
-
-            let sum = 0;
-            let cnt = 0;
-            for (let v of noiseBuffer) {
-                sum += v;
-                cnt += 1;
-            }
-
-            return Math.round(sum / cnt * 100) / 100;
+            throw "Error converting NTC resistance to temperature";
         }
 
         let sensors = [
             createSensor("WaterFlow", "Water Flow", convertFlow, "l/h"),
             createSensor("WaterPressure", "Water Pressure", convertPressure, "bar"),
-            createSensor("FrigoPressure", "Refrigerant Pressure", convertPressure, "bar")
+            createSensor("FrigoPressure", "Refrigerant Pressure", convertPressure, "bar"),
+            createSensor("WaterInTemp", "Water In Temperature", convertTemperature, "°C"),
+            createSensor("WaterOutTemp", "Water Out Temperature", convertTemperature, "°C"),
+            createSensor("FrigoInTemp", "Refrigerant In Temperature", convertTemperature, "°C"),
+            createSensor("FrigoOutTemp", "Refrigerant Out Temperature", convertTemperature, "°C"),
         ];
 
         registers.push(...sensors);
@@ -79,10 +79,11 @@ module.exports = async config => {
                 let data = Buffer.from(await i2c.read(registerConfig.address, (7 + 2) * 2));
                 let vRefIntData = data.readUInt16LE(7 * 2);
                 let vRefIntCal = data.readUInt16LE(8 * 2);
-                console.info(key, vRefIntCal, vRefIntData);
+                let vcc = 3.3 * vRefIntCal / vRefIntData;
+
                 for (let c in sensors) {
                     try {
-                        await sensors[c].setRaw(data.readUInt16LE(c * 2));
+                        await sensors[c].setRaw(data.readUInt16LE(c * 2), vcc);
                     } catch (e) {
                         await sensors[c].failed(e.message || e);
                     }

@@ -19,40 +19,6 @@
                     }
                 }
             },
-            "lm75a": {
-                "coldWaterIn": {
-                    "name": "Cold Side Water Inlet",
-                    "address": "0x48"
-                },
-                "coldWaterOut": {
-                    "name": "Cold Side Water Outlet",
-                    "address": "0x49"
-                },
-                "coldFrigoIn": {
-                    "name": "Cold Side Refrigerant Inlet",
-                    "address": "0x4A"
-                },
-                "coldFrigoOut": {
-                    "name": "Cold Side Refrigerant Outlet",
-                    "address": "0x4B"
-                },
-                "hotFrigoIn": {
-                    "name": "Hot Side Refrigerant Inlet",
-                    "address": "0x4D"
-                },
-                "hotFrigoOut": {
-                    "name": "Hot Side Refrigerant Outlet",
-                    "address": "0x4C"
-                },
-                "hotWaterIn": {
-                    "name": "Hot Side Water Inlet",
-                    "address": "0x4E"
-                },
-                "hotWaterOut": {
-                    "name": "Hot Side Water Outlet",
-                    "address": "0x4F"
-                }
-            },
             "analogSensors": {
                 "cold": {
                     "name": "Cold Side",
@@ -62,13 +28,23 @@
                     },
                     "transducerWaterPressure": {
                         "min": 0,
-                        "max": 12,
-                        "calibration": 0.1
+                        "max": 12
                     },
                     "transducerFrigoPressure": {
                         "min": -1,
-                        "max": 9.3,
-                        "calibration": 0.2
+                        "max": 9.3
+                    },
+                    "transducerWaterInTemp": {
+                        "r2": 56000
+                    },
+                    "transducerWaterOutTemp": {
+                        "r2": 56000
+                    },
+                    "transducerFrigoInTemp": {
+                        "r2": 56000
+                    },
+                    "transducerFrigoOutTemp": {
+                        "r2": 56000
                     }
                 },
                 "hot": {
@@ -79,13 +55,23 @@
                     },
                     "transducerWaterPressure": {
                         "min": 0,
-                        "max": 12,
-                        "calibration": 0.1
+                        "max": 12
                     },
                     "transducerFrigoPressure": {
                         "min": 0,
-                        "max": 34.5,
-                        "calibration": 1.8
+                        "max": 34.5
+                    },
+                    "transducerWaterInTemp": {
+                        "r2": 4700
+                    },
+                    "transducerWaterOutTemp": {
+                        "r2": 4700
+                    },
+                    "transducerFrigoInTemp": {
+                        "r2": 1500
+                    },
+                    "transducerFrigoOutTemp": {
+                        "r2": 4700
                     }
                 }
             }
