@@ -18,7 +18,7 @@ module.exports = async config => {
         createRegister("superheatTarget", "Superheat Target", config.superheat, "°C"),
         createRegister("startedAt", "Started At"),
         createRegister("stoppedAt", "Stopped At"),
-        createRegister("targetTemp", "Target Temperature", 52, "°C"),
+        createRegister("targetTemp", "Target Temperature", config.target, "°C"),
         ...peripherals.registers
     ];
 

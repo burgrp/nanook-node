@@ -77,7 +77,8 @@
             }
         },
         "refrigerant": "r134a",
-        "superheat": 10,
+	"target": 55,
+        "superheat": 12,
         "saturationData": {
             "r134a": [
                 [
