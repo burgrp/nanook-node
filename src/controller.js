@@ -115,7 +115,7 @@ module.exports = async config => {
         checkRegister(registers.hotFrigoPressure, 0, 25);
         checkRegister(registers.psLow, true, true);
         checkRegister(registers.psHigh, true, true);
-        checkRegister(registers.hotFrigoInTemp, 0, 120);
+        checkRegister(registers.hotFrigoInTemp, 0, 130);
     }
 
     async function checkRegistersAndStop() {
