@@ -194,7 +194,10 @@
     "dfReg": {
         "module": "./df-reg.js",
         "broker": "-> $.MQTT",
-        "registers": "-> controller.registers"
+        "registers": "-> controller.registers",
+        "writeEnabled": [
+            "nanook.targetTemp"
+        ]
     },
     "web": {
         "module": "@device.farm/webglue",
