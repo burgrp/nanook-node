@@ -1,6 +1,11 @@
 {
     "controller": {
         "module": "./controller.js",
+        "target": 45,
+        "maxOutputTemp": 62,
+        "superheat": 12,
+        "targetTempMaxError": 4,
+        "avgOutputTempRise": 10,
         "peripherals": {
             "module": "./peripherals.js",
             "tickMs": 500,
@@ -77,8 +82,6 @@
             }
         },
         "refrigerant": "r134a",
-        "target": 55,
-        "superheat": 12,
         "saturationData": {
             "r134a": [
                 [
