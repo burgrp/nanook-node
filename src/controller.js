@@ -230,7 +230,7 @@ module.exports = async config => {
 
                 await config.peripherals.eevRun(500, true);
                 await asyncWait(10000);
-                await config.peripherals.eevRun(-250, true);
+                await config.peripherals.eevRun(-150, true);
                 await asyncWait(2000);
 
                 await sweep(async r => {
