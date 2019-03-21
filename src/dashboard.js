@@ -61,7 +61,7 @@ module.exports = async config => {
     });
 
     Object.values(config.controller.registers).forEach(register => {
-        register.watch(() => {            
+        register.watch(() => {
             dashboard.events.registerChanged(register);
         })
     });
