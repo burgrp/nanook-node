@@ -144,3 +144,37 @@ button.locked {
 .system-errors {
     margin: 1em;
 }
+
+.software-updates {
+    background-color: #006589;
+    border-radius: 0.5em;
+    padding: 1em 2em 1em 2em;  
+    box-shadow: 0 0 1em black;
+    border: 1px #cff2ff solid;   
+}
+
+.software-updates:empty {
+    display: none;   
+}
+
+.software-updates .caption {
+    margin-bottom: 0.7em;
+    align-self: center;
+    font-weight: bold;
+}
+
+.software-updates .log-line {
+    flex-direction: row;
+    margin-bottom: 0.5em;
+}
+
+.software-updates .log-line .date {
+    font-size: smaller;
+    margin-right: 1em;
+}
+
+.software-updates button {
+    margin-top: 0.5em;
+    max-width: 20em;
+    align-self: center;
+}

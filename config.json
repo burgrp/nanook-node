@@ -209,7 +209,11 @@
         "modules": [
             {
                 "module": "./dashboard.js",
-                "controller": "-> controller"
+                "controller": "-> controller",
+                "updates": {
+                    "module": "app2date",
+                    "service": "nanook"
+                }
             }
         ]
     }

@@ -20,12 +20,15 @@ wg.pages.home = {
             }, 5000);
         }
 
-        async function checkAction(action) {
+        async function checkAction(action, rethrow = false) {
             try {
-                await action();
+                return await action();
             } catch (e) {
                 console.error(e);
                 showNotification(e);
+                if (rethrow) {
+                        throw e;        
+                }
             }
         }
 
@@ -174,7 +177,28 @@ wg.pages.home = {
                             updateAllRegisters();
                         });
                     }),
-                    systemErrors
+                    systemErrors,
+                    DIV("software-updates", async div => {
+                        async function checkForUpdates() {
+                                div.empty();
+                                let updates = await wg.updates.check();
+                                if (updates.length) {
+                                        div.append(DIV("caption").text("Software updates available:"))
+                                        div.append(updates.map(update => DIV("log-line", [
+                                                DIV("date").text(update.date),
+                                                DIV("message").text(update.message)
+                                        ])));
+                                        div.append(BUTTON().text("Download updates").click(() => {
+                                                div.empty().append(DIV().text("Downloading updates, please wait..."));
+                                                checkAction(async () => {
+                                                        await wg.updates.download();
+                                                        checkForUpdates();
+                                                });
+                                        }))
+                                }
+                        }
+                        checkAction(checkForUpdates);
+                    })
                 ])
             ])
                 .onRegisterChanged(cr => {

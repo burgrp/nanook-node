@@ -51,8 +51,8 @@ module.exports = async config => {
                 async setRgbLed(led) {
                     await config.controller.setRgbLed(led);
                 }
-
-            }
+            },
+            updates: config.updates
         }
     }
 
