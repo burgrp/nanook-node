@@ -192,7 +192,7 @@ wg.pages.home = {
                                                 div.empty().append(DIV().text("Downloading updates, please wait..."));
                                                 checkAction(async () => {
                                                         await wg.updates.download();
-                                                        checkForUpdates();
+                                                        await checkForUpdates();
                                                 });
                                         }))
                                 }
