@@ -1,9 +1,7 @@
 {
     "controller": {
         "module": "./controller.js",
-        "target": 45,
         "maxOutputTemp": 62,
-        "superheat": 12,
         "targetTempMaxError": 4,
         "avgOutputTempRise": 10,
         "peripherals": {
@@ -193,6 +191,12 @@
                     39.37
                 ]
             ]
+        },
+        "flashConfig": {
+            "module": "flash-config/src/flash-config"
+        },
+        "networkManager": {
+            "module": "flash-config/src/network-manager"
         }
     },
     "dfReg": {

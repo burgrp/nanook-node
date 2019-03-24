@@ -11,7 +11,8 @@
             "program": "${workspaceFolder}/src/main.js",
             "env": {
                 "I2C_BUS": "usb"
-            }
+            },
+            "outputCapture": "std"
         },
         {
             "type": "node",

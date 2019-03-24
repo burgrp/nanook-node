@@ -1,4 +1,5 @@
 const createRegister = require("./register.js");
+const createPersistentRegister = require("./persistent.js");
 const asyncWait = require("./async-wait.js");
 const deepEqual = require("fast-deep-equal");
 
@@ -8,17 +9,19 @@ module.exports = async config => {
 
     let peripherals = config.peripherals;
 
+    let dataDir = config.dataDir || (__dirname + "/../data");
+
     let registers;
     registers = [
         createRegister("sequenceInProgress", "Sequence In Progress"),
-        createRegister("manualControl", "Manual Control", false),
+        await createPersistentRegister(dataDir, "manualControl", "Manual Control", true),
         createRegister("refrigerant", "Refrigerant", config.refrigerant),
         createRegister("evaporationTemp", "Evaporation Temperature", undefined, "°C"),
         createRegister("superheatActual", "Superheat Actual", undefined, "°C"),
-        createRegister("superheatTarget", "Superheat Target", config.superheat, "°C"),
+        await createPersistentRegister(dataDir, "superheatTarget", "Superheat Target", 12, "°C"),
         createRegister("startedAt", "Started At"),
         createRegister("stoppedAt", "Stopped At"),
-        createRegister("targetTemp", "Target Temperature", config.target, "°C"),
+        await createPersistentRegister(dataDir, "targetTemp", "Target Temperature", 45, "°C"),
         ...peripherals.registers
     ];
 
@@ -394,6 +397,19 @@ module.exports = async config => {
     scheduleTargetTempStop();
 
     await updateRgbLed();
+
+    config.flashConfig.watch({
+        name: "wifi.txt",
+        format: config.flashConfig.text,
+        callback: async c => {
+            try {
+                await config.networkManager.configure(c, "nanook");
+                console.info(`Connection to ${c.ssid} configured!`);
+            } catch (e) {
+                setSystemError("flashConfig", e.message || e);
+            }
+        }        
+    }); 
 
     return {
 

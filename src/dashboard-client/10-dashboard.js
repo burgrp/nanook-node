@@ -27,7 +27,7 @@ wg.pages.home = {
                 console.error(e);
                 showNotification(e);
                 if (rethrow) {
-                        throw e;        
+                    throw e;
                 }
             }
         }
@@ -79,12 +79,12 @@ wg.pages.home = {
             ]
         }
 
-        let convertDate = d => d? new Date(d).toLocaleString(): "-";
+        let convertDate = d => d ? new Date(d).toLocaleString() : "-";
 
         let converters = {
-                sequenceInProgress:  v => v? v.toUpperCase(): "NONE",
-                startedAt: convertDate ,
-                stoppedAt: convertDate
+            sequenceInProgress: v => v ? v.toUpperCase() : "NONE",
+            startedAt: convertDate,
+            stoppedAt: convertDate
         }
 
         let systemErrors = DIV("system-errors");
@@ -113,17 +113,17 @@ wg.pages.home = {
             $(".register-bound." + register.key)
                 .text(
                     (
-                        converters[register.key]? 
-                                converters[register.key](register.value):
-                        register.value instanceof Object ?
-                            register.value.key ?
-                                register.value.key :
-                                JSON.stringify(register.value) :
-                            typeof register.value === "number" ?
-                                register.value.toFixed(1) :
-                                typeof register.value === "boolean" ?
-                                    register.value ? "ON" : "OFF" :
-                                    register.value === undefined ? "-" : register.value
+                        converters[register.key] ?
+                            converters[register.key](register.value) :
+                            register.value instanceof Object ?
+                                register.value.key ?
+                                    register.value.key :
+                                    JSON.stringify(register.value) :
+                                typeof register.value === "number" ?
+                                    register.value.toFixed(1) :
+                                    typeof register.value === "boolean" ?
+                                        register.value ? "ON" : "OFF" :
+                                        register.value === undefined ? "-" : register.value
                     ) + (register.unit ? " " + register.unit : "")
                 )
                 .toggleClass("goesDown", diff < 0)
@@ -137,9 +137,9 @@ wg.pages.home = {
                 $("#svg-compressor").css("fill", `rgb(0, 160, 100, ${alpha})`);
             }
 
-//             if (register.key === "eevPosition") {
-//                 $("#eevPosition").val(register.value);
-//             }
+            //             if (register.key === "eevPosition") {
+            //                 $("#eevPosition").val(register.value);
+            //             }
 
         }
 
@@ -180,22 +180,20 @@ wg.pages.home = {
                     systemErrors,
                     DIV("software-updates", async div => {
                         async function checkForUpdates() {
-                                div.empty();
-                                let updates = await wg.updates.check();
-                                if (updates.length) {
-                                        div.append(DIV("caption").text("Software updates available:"))
-                                        div.append(updates.map(update => DIV("log-line", [
-                                                DIV("date").text(update.date),
-                                                DIV("message").text(update.message)
-                                        ])));
-                                        div.append(BUTTON().text("Download updates").click(() => {
-                                                div.empty().append(DIV().text("Downloading updates, please wait..."));
-                                                checkAction(async () => {
-                                                        await wg.updates.download();
-                                                        await checkForUpdates();
-                                                });
-                                        }))
-                                }
+                            div.empty();
+                            let updates = await wg.updates.check();
+                            if (updates.length) {
+                                div.append(DIV("caption").text("Software updates available:"))
+                                div.append(updates.map(update => DIV("log-line", [
+                                    DIV("date").text(update.date),
+                                    DIV("message").text(update.message)
+                                ])));
+                                div.append(BUTTON().text("Download updates").click(async () => {
+                                    div.empty().append(DIV().text("Downloading updates, please wait..."));
+                                    await checkAction(wg.updates.download);
+                                    await checkAction(checkForUpdates);
+                                }))
+                            }
                         }
                         checkAction(checkForUpdates);
                     })
