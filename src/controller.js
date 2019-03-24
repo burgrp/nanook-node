@@ -409,7 +409,7 @@ module.exports = async config => {
                 setSystemError("flashConfig", e.message || e);
             }
         }        
-    }); 
+    }).start();
 
     return {
 
