@@ -395,6 +395,19 @@ module.exports = async config => {
 
     await updateRgbLed();
 
+    config.flashConfig.watch({
+        name: "wifi.txt",
+        format: config.flashConfig.text,
+        callback: async c => {
+            try {
+                await config.networkManager.configure(c, "nanook");
+                console.info(`Connection to ${c.ssid} configured!`);
+            } catch (e) {
+                setSystemError("flashConfig", e.message || e);
+            }
+        }        
+    }); 
+
     return {
 
         registers,

@@ -193,6 +193,12 @@
                     39.37
                 ]
             ]
+        },
+        "flashConfig": {
+            "module": "flash-config/src/flash-config"
+        },
+        "networkManager": {
+            "module": "flash-config/src/network-manager"
         }
     },
     "dfReg": {
