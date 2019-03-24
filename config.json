@@ -1,9 +1,7 @@
 {
     "controller": {
         "module": "./controller.js",
-        "target": 45,
         "maxOutputTemp": 62,
-        "superheat": 12,
         "targetTempMaxError": 4,
         "avgOutputTempRise": 10,
         "peripherals": {
