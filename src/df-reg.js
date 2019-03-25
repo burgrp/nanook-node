@@ -8,53 +8,72 @@ module.exports = async config => {
 
     let eachReg = cb => Object.values(config.registers).forEach(reg => cb(reg));
 
-    if (config.broker) {
-        var client = mqtt.connect(`mqtt://${config.broker}`);
-        client.subscribe("register/advertise!");
+    let client;
 
-        let publishValue = reg => {
+    function publishValue(reg) {
+        if (client) {
             client.publish(regTopic("is", reg), JSON.stringify(reg.value));
-        };
+        }
+    };
 
-        client.on("message", (topic, message) => {
-            try {
+    function reconnect() {
+        if (client) {
+            console.info("Disconnecting from MQTT broker");
+            client.end();
+        }
+        if (config.registers.mqttBroker.value) {
+            console.info("Connecting to MQTT broker", config.registers.mqttBroker.value);
 
-                if (topic === "register/advertise!") {
+            client = mqtt.connect(`mqtt://${config.registers.mqttBroker.value}`);
+            client.subscribe("register/advertise!");
+
+            client.on("message", (topic, message) => {
+                try {
+
+                    if (topic === "register/advertise!") {
+                        eachReg(reg => {
+                            client.publish(regTopic("advertise", reg), JSON.stringify({ device, title: reg.name, unit: reg.unit }));
+                        });
+                    }
+
                     eachReg(reg => {
-                        client.publish(regTopic("advertise", reg), JSON.stringify({ device, title: reg.name, unit: reg.unit }));
-                    });
-                }
-
-                eachReg(reg => {
-                    if (topic === regTopic("get", reg)) {
-                        publishValue(reg);
-                    }
-                });
-
-                eachReg(reg => {
-                    if (topic === regTopic("set", reg)) {
-                        if ((config.writeEnabled || []).some(rn => rn === regPrefix + "." + reg.key)) {
-                            let value = JSON.parse(message);
-                            console.info(`${reg.key} to be set to ${value} by MQTT`);
-                            reg.set(value);
+                        if (topic === regTopic("get", reg)) {
+                            publishValue(reg);
                         }
-                        publishValue(reg);
-                    }
-                });
+                    });
+
+                    eachReg(reg => {
+                        if (topic === regTopic("set", reg)) {
+                            if ((config.writeEnabled || []).some(rn => rn === regPrefix + "." + reg.key)) {
+                                let value = JSON.parse(message);
+                                console.info(`${reg.key} to be set to ${value} by MQTT`);
+                                reg.set(value);
+                            }
+                            publishValue(reg);
+                        }
+                    });
 
 
-            } catch (e) {
-                console.error(`Error in MQTT message handler on topic ${topic}: ${e.message || e}`);
-            }
-        });
+                } catch (e) {
+                    console.error(`Error in MQTT message handler on topic ${topic}: ${e.message || e}`);
+                }
+            });
 
-        eachReg(reg => {
-            client.subscribe(regTopic("get", reg));
-            client.subscribe(regTopic("set", reg));
-            reg.watch(r => {
-                publishValue(r);
-            })
-        });
+            eachReg(reg => {
+                client.subscribe(regTopic("get", reg));
+                client.subscribe(regTopic("set", reg));
+            });        
+        }
     }
+
+    reconnect();
+
+    config.registers.mqttBroker.watch(reconnect);
+
+    eachReg(reg => {
+        reg.watch(r => {
+            publishValue(r);
+        })
+    });
 
 };

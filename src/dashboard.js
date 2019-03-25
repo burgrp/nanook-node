@@ -50,6 +50,10 @@ module.exports = async config => {
 
                 async setRgbLed(led) {
                     await config.controller.setRgbLed(led);
+                },
+
+                async setMqttBroker(broker) {
+                    console.info(broker);
                 }
             },
             updates: config.updates

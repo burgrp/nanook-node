@@ -10,7 +10,7 @@ body {
     display: none; 
 }
 
-body, button, td {
+body, button, td, input {
     font-size: 12pt;  
 }
 
@@ -36,6 +36,10 @@ button {
     letter-spacing: 0.08em;
     text-transform: uppercase;
     font-size: smaller;
+}
+
+input {
+    padding: 0.2em;
 }
 
 button:active {
@@ -135,6 +139,7 @@ button.locked {
     position: fixed;
     right: 1em;
     top: 1em;
+    z-index: 1000;
 }
 
 .notifications:empty, .system-errors:empty {
@@ -177,4 +182,46 @@ button.locked {
     margin-top: 0.5em;
     max-width: 20em;
     align-self: center;
+}
+
+.overlay {
+    position: fixed;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #0000009c;
+    align-items: center;
+    justify-content: center;
+}
+
+.overlay .window {
+    background-color: #f1f1f1;
+    border-radius: 0.5em;
+    color: #0b0b0b;
+    padding: 1em;
+    box-shadow: 0 0 1em black;
+}
+
+.overlay .window .title {
+    margin-bottom: 1.5em;
+    font-weight: bold;
+    padding-bottom: 0.3em;
+    border-bottom: 1px solid #bebbbb;
+}
+
+.overlay .window .buttons {
+    margin-top: 1.5em;
+    flex-direction: row;
+    justify-content: center;
+}
+
+.overlay .window .buttons>*:not(:last-child) {
+    margin-right: 1em;
+}
+
+.overlay .window button {
+    background-color: #3f3f3f;
+    color: whitesmoke;
+    padding: 0.5em 2em;
 }

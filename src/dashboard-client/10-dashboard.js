@@ -20,15 +20,12 @@ wg.pages.home = {
             }, 5000);
         }
 
-        async function checkAction(action, rethrow = false) {
+        async function checkAction(action) {
             try {
                 return await action();
             } catch (e) {
                 console.error(e);
                 showNotification(e);
-                if (rethrow) {
-                    throw e;
-                }
             }
         }
 
@@ -54,6 +51,28 @@ wg.pages.home = {
             return BUTTON().text(text).click(e => checkAction(async () => await wg.dashboard.setRegister(reg.key, reg.value + change)));
         }
 
+        function createDialog(title, content, apply) {
+                function close() {
+                        dialog.remove();
+                }                                
+                let dialog = DIV("overlay", [
+                        DIV("window", [
+                                DIV("title").text(title),
+                                DIV("content", content),
+                                DIV("buttons", [
+                                        BUTTON().text("Ok").click(() => {
+                                                checkAction(async () => {
+                                                        await apply();
+                                                        close();                                                                
+                                                });
+                                        }),
+                                        BUTTON().text("Cancel").click(close)
+                                ])
+                        ]).click(e => e.stopImmediatePropagation())
+                ]
+                ).click(close).appendTo(container);                                
+        }        
+
         let controls = {
             sequenceInProgress: startStopButtons(async s => await (s ? wg.dashboard.start : wg.dashboard.stop)(s), true),
             coldWaterPump: startStopButtons(async s => await wg.dashboard.setColdWaterPump(s)),
@@ -76,6 +95,15 @@ wg.pages.home = {
             superheatTarget: [
                 regSpinButton("<", -1, registers.superheatTarget),
                 regSpinButton(">", 1, registers.superheatTarget),
+            ],
+            mqttBroker: [
+                BUTTON().text("Change").click(e => {                                       
+                        let input = TEXT().val(registers.mqttBroker.value);
+                        createDialog("MQTT Broker", [input], () => {
+                                wg.dashboard.setRegister("mqttBroker", input.val());
+                        });
+                        input.focus().select();
+                })
             ]
         }
 
