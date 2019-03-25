@@ -13,15 +13,16 @@ module.exports = async config => {
 
     let registers;
     registers = [
-        createRegister("sequenceInProgress", "Sequence In Progress"),
+        await createPersistentRegister(dataDir, "targetTemp", "Target Temperature", 45, "°C"),
         await createPersistentRegister(dataDir, "manualControl", "Manual Control", true),
-        createRegister("refrigerant", "Refrigerant", config.refrigerant),
-        createRegister("evaporationTemp", "Evaporation Temperature", undefined, "°C"),
-        createRegister("superheatActual", "Superheat Actual", undefined, "°C"),
-        await createPersistentRegister(dataDir, "superheatTarget", "Superheat Target", 12, "°C"),
+        createRegister("sequenceInProgress", "Sequence In Progress"),
         createRegister("startedAt", "Started At"),
         createRegister("stoppedAt", "Stopped At"),
-        await createPersistentRegister(dataDir, "targetTemp", "Target Temperature", 45, "°C"),
+        createRegister("refrigerant", "Refrigerant", config.refrigerant),
+        createRegister("evaporationTemp", "Evaporation Temperature", undefined, "°C"),
+        await createPersistentRegister(dataDir, "superheatTarget", "Superheat Target", 12, "°C"),
+        createRegister("superheatActual", "Superheat Actual", undefined, "°C"),
+        await createPersistentRegister(dataDir, "mqttBroker", "MQTT Broker", "mqtt.local"),
         ...peripherals.registers
     ];
 
