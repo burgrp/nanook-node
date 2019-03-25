@@ -105,8 +105,8 @@ target apt -o Apt::Color=no -y install git avahi-daemon usbmount $EXTRA_PACKAGES
 
 host tar -xf $NODE_GZ_PATH --directory $MOUNT_POINT/usr/local --strip-components 1
 
-target git config --file /root/.gitconfig user.email "$APP_NAME@$TARGET_HOSTNAME"
-target git config --file /root/.gitconfig user.name "$APP_NAME"
+target git config --file /etc/gitconfig user.email "$APP_NAME@$TARGET_HOSTNAME"
+target git config --file /etc/gitconfig user.name "$APP_NAME"
 target git clone -b $GIT_BRANCH $GIT_URL $GIT_PATH
 target npm --no-color --unsafe-perm --prefix $APP_PATH install
 
