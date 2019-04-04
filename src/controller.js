@@ -22,7 +22,7 @@ module.exports = async config => {
         createRegister("evaporationTemp", "Evaporation Temperature", undefined, "°C"),
         await createPersistentRegister(dataDir, "superheatTarget", "Superheat Target", 12, "°C"),
         createRegister("superheatActual", "Superheat Actual", undefined, "°C"),
-        await createPersistentRegister(dataDir, "mqttBroker", "MQTT Broker", "mqtt.local"),
+        await createPersistentRegister(dataDir, "mqttBroker", "MQTT Broker", ""),
         ...peripherals.registers
     ];
 
