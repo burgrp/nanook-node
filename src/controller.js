@@ -234,8 +234,7 @@ module.exports = async config => {
 
                 await config.peripherals.eevRun(500, true);
                 await asyncWait(10000);
-                await config.peripherals.eevRun(-150, true);
-                await asyncWait(2000);
+                await config.peripherals.eevRun(-300, true);
 
                 await sweep(async r => {
                     await peripherals.setCompressorRamp(r);
@@ -244,6 +243,7 @@ module.exports = async config => {
                 await asyncWait(1000);
                 await peripherals.setCompressorRamp(0);
 
+                await asyncWait(4000);
             });
 
         } catch (e) {
