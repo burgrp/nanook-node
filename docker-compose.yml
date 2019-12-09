@@ -2,6 +2,7 @@ version: "2.3"
 
 services:
   nanook:
+    container_name: nanook
     image: defa/nanook
     privileged: true
     restart: always

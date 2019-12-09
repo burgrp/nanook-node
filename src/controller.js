@@ -10,6 +10,7 @@ module.exports = async config => {
     let peripherals = config.peripherals;
 
     let dataDir = config.dataDir || (__dirname + "/../data");
+    console.info("Data directory", dataDir);
 
     let registers;
     registers = [

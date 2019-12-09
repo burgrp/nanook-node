@@ -4,6 +4,7 @@
         "maxOutputTemp": 62,
         "targetTempMaxError": 4,
         "avgOutputTempRise": 10,
+        "dataDir": "-> $.DATA_DIR",
         "peripherals": {
             "module": "./peripherals.js",
             "tickMs": 500,
@@ -213,8 +214,7 @@
         "modules": [
             {
                 "module": "./dashboard.js",
-                "controller": "-> controller",
-                "dataDir": "-> $.DATA_DIR"
+                "controller": "-> controller"
             }
         ]
     }

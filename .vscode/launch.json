@@ -10,7 +10,8 @@
             "name": "NANOOK - local",
             "program": "${workspaceFolder}/src/main.js",
             "env": {
-                "I2C_BUS": "usb"
+                "I2C_BUS": "usb",
+                "DATA_DIR": "/tmp"
             },
             "outputCapture": "std"
         },
