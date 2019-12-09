@@ -214,10 +214,7 @@
             {
                 "module": "./dashboard.js",
                 "controller": "-> controller",
-                "updates": {
-                    "module": "app2date",
-                    "service": "nanook"
-                }
+                "dataDir": "-> $.DATA_DIR"
             }
         ]
     }

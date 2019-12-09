@@ -1,9 +1,12 @@
-const Bus = require("i2c-bus-promised").Bus;
+let Bus;
 
 module.exports = config => {
     return {
         async open(address) {
             try {
+                if (!Bus) {
+                    Bus = require("i2c-bus-promised").Bus;
+                }
                 const bus = new Bus(parseInt(address || 0));
                 console.info("Opening I2C bus...");
                 await bus.open();

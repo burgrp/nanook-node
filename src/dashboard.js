@@ -55,8 +55,7 @@ module.exports = async config => {
                 async setMqttBroker(broker) {
                     console.info(broker);
                 }
-            },
-            updates: config.updates
+            }
         }
     }
 

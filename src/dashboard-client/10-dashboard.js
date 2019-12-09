@@ -206,25 +206,25 @@ wg.pages.home = {
                         });
                     }),
                     systemErrors,
-                    DIV("software-updates", async div => {
-                        async function checkForUpdates() {
-                            div.empty();
-                            let updates = await wg.updates.check();
-                            if (updates.length) {
-                                div.append(DIV("caption").text("Software updates available:"))
-                                div.append(updates.map(update => DIV("log-line", [
-                                    DIV("date").text(update.date),
-                                    DIV("message").text(update.message)
-                                ])));
-                                div.append(BUTTON().text("Download updates").click(async () => {
-                                    div.empty().append(DIV().text("Downloading updates, please wait..."));
-                                    await checkAction(wg.updates.download);
-                                    await checkAction(checkForUpdates);
-                                }))
-                            }
-                        }
-                        checkAction(checkForUpdates);
-                    })
+                    // DIV("software-updates", async div => {
+                    //     async function checkForUpdates() {
+                    //         div.empty();
+                    //         let updates = await wg.updates.check();
+                    //         if (updates.length) {
+                    //             div.append(DIV("caption").text("Software updates available:"))
+                    //             div.append(updates.map(update => DIV("log-line", [
+                    //                 DIV("date").text(update.date),
+                    //                 DIV("message").text(update.message)
+                    //             ])));
+                    //             div.append(BUTTON().text("Download updates").click(async () => {
+                    //                 div.empty().append(DIV().text("Downloading updates, please wait..."));
+                    //                 await checkAction(wg.updates.download);
+                    //                 await checkAction(checkForUpdates);
+                    //             }))
+                    //         }
+                    //     }
+                    //     checkAction(checkForUpdates);
+                    // })
                 ])
             ])
                 .onRegisterChanged(cr => {

@@ -1,13 +1,19 @@
-FROM resin/raspberry-pi2-node:9-slim
+FROM node:10-alpine AS builder
 
-WORKDIR /gwhp
+WORKDIR /nanook
+
+RUN apk add python alpine-sdk linux-headers
 
 COPY package.json .
 COPY config.json .
+
+RUN npm install
+
+FROM node:10-alpine
+
+COPY --from=builder /nanook /nanook
 COPY src src/
 
-RUN [ "cross-build-start" ]
-RUN npm install
-RUN [ "cross-build-end" ]
 
+WORKDIR /nanook
 CMD [ "node", "--inspect=0.0.0.0:9229", "src/main.js" ]
