@@ -14,7 +14,8 @@ module.exports = async config => {
 
     let registers;
     registers = [
-        await createPersistentRegister(dataDir, "targetTemp", "Target Temperature", 45, "°C"),
+        await createPersistentRegister(dataDir, "maxOutTemp", "Max Out Temperature", 45, "°C"),
+        await createPersistentRegister(dataDir, "minInTemp", "Min In Temperature", 30, "°C"),
         await createPersistentRegister(dataDir, "manualControl", "Manual Control", true),
         createRegister("sequenceInProgress", "Sequence In Progress"),
         createRegister("startedAt", "Started At"),
@@ -61,7 +62,7 @@ module.exports = async config => {
             if (!deepEqual(newSetting, ledSetting)) {
                 ledSetting = newSetting;
                 await peripherals.setRgbLed(ledSetting);
-            }            
+            }
         } catch (e) {
             console.error("Error while updating RGB LED", e);
         }
@@ -159,6 +160,33 @@ module.exports = async config => {
 
     registers.coldFrigoPressure.watch(updateActualSuperheat);
     registers.coldFrigoOutTemp.watch(updateActualSuperheat);
+
+    let minTempDiff = 15;
+
+    registers.maxOutTemp.watch(async () => {
+        await registers.maxOutTemp.set(
+            Math.min(
+                config.maxOutTemp,
+                registers.maxOutTemp.value
+            )
+        );
+        await registers.minInTemp.set(
+            Math.min(
+                registers.minInTemp.value,
+                registers.maxOutTemp.value - config.minTempDiff
+            )
+        );
+    });
+
+    registers.minInTemp.watch(async () => {
+        await registers.maxOutTemp.set(
+            Math.max(
+                registers.maxOutTemp.value,
+                registers.minInTemp.value + config.minTempDiff
+            )
+        );
+    });
+
 
     async function sweep(cb, from, to, timeMs, periodMs = 100) {
         let steps = Math.ceil(timeMs / periodMs);
@@ -308,18 +336,12 @@ module.exports = async config => {
         lastSuperheat = actual;
     }, 1000 * (config.eevIntervalSec || 5));
 
-
-    let targetTempMaxError = config.targetTempMaxError;
-    let avgOutputTempRise = config.avgOutputTempRise;
-    let maxOutputTemp = config.maxOutputTemp;
-
     function scheduleTargetTempStart(scheduleMs) {
         setTimeout(async () => {
-            if (!registers.manualControl.value && registers.targetTemp.value && registers.compressorRelay.value === false) {
+            if (!registers.manualControl.value && registers.minInTemp.value && registers.compressorRelay.value === false) {
                 try {
-                    let targetTemp = registers.targetTemp.value;
                     let nowMs = new Date().getTime();
-                    console.info("Target temp start check", targetTemp);
+                    console.info("Target temp start check");
 
                     // check for start
 
@@ -342,10 +364,8 @@ module.exports = async config => {
                             return temp;
                         });
 
-                        let startTemp = targetTemp - avgOutputTempRise - targetTempMaxError;
-
-                        console.info("Water inlet temperature is", hotWaterInTemp, "will start at", startTemp);
-                        if (hotWaterInTemp <= startTemp) {
+                        console.info("Water inlet temperature is", hotWaterInTemp, "will start at", registers.minInTemp.value);
+                        if (hotWaterInTemp <= registers.minInTemp.value) {
                             await start();
                         }
 
@@ -361,11 +381,10 @@ module.exports = async config => {
 
     function scheduleTargetTempStop() {
         setTimeout(async () => {
-            if (!registers.manualControl.value && registers.targetTemp.value && registers.compressorRelay.value === true) {
+            if (!registers.manualControl.value && registers.maxOutTemp.value && registers.compressorRelay.value === true) {
                 try {
-                    let targetTemp = registers.targetTemp.value;
                     let nowMs = new Date().getTime();
-                    console.info("Target temp stop check", targetTemp);
+                    console.info("Target temp stop check");
 
                     // check for stop
 
@@ -376,11 +395,10 @@ module.exports = async config => {
                     } else {
 
                         let hotWaterOutTemp = registers.hotWaterOutTemp.value;
-                        let stopTemp = Math.min(targetTemp + targetTempMaxError, maxOutputTemp);
 
-                        console.info("Water outlet temperature is", hotWaterOutTemp, "will stop at", stopTemp);
+                        console.info("Water outlet temperature is", hotWaterOutTemp, "will stop at", registers.maxOutTemp.value);
                         if (
-                            (hotWaterOutTemp >= stopTemp)
+                            (hotWaterOutTemp >= registers.maxOutTemp.value)
                         ) {
                             await stop();
                         }
@@ -410,7 +428,7 @@ module.exports = async config => {
             } catch (e) {
                 setSystemError("flashConfig", e.message || e);
             }
-        }        
+        }
     }).start();
 
     return {

@@ -29,9 +29,9 @@ wg.pages.home = {
             }
         }
 
-        function startStopButtons(action, lock) {
-            let start = BUTTON("start" + (lock ? " locked" : "")).text("Start").click(e => checkAction(async () => await action(true)));
-            let stop = BUTTON("stop" + (lock ? " locked" : "")).text("Stop").click(e => checkAction(async () => await action(false)));
+        function startStopButtons(action, lock, labels = ["stop", "start"]) {
+            let start = BUTTON("start" + (lock ? " locked" : "")).text(labels[1]).click(e => checkAction(async () => await action(true)));
+            let stop = BUTTON("stop" + (lock ? " locked" : "")).text(labels[0]).click(e => checkAction(async () => await action(false)));
             return [
                 lock ? BUTTON("unlock").text("Unlock").click(e => {
                     $(start).toggleClass("locked", false);
@@ -77,7 +77,7 @@ wg.pages.home = {
             sequenceInProgress: startStopButtons(async s => await (s ? wg.dashboard.start : wg.dashboard.stop)(s), true),
             coldWaterPump: startStopButtons(async s => await wg.dashboard.setColdWaterPump(s)),
             hotWaterPump: startStopButtons(async s => await wg.dashboard.setHotWaterPump(s)),
-            manualControl: startStopButtons(async s => await wg.dashboard.setRegister("manualControl", s)),
+            manualControl: startStopButtons(async s => await wg.dashboard.setRegister("manualControl", s), false, ["Auto", "Manual"]),
             eevPosition: [
                 eevButton("OP", -500, true),
                 eevButton("<<", -50, false),
@@ -85,6 +85,18 @@ wg.pages.home = {
                 eevButton(">", 5, false),
                 eevButton(">>", 50, false),
                 eevButton("CL", 500, true)
+            ],
+            maxOutTemp: [
+                regSpinButton("<<", -5, registers.maxOutTemp),
+                regSpinButton("<", -1, registers.maxOutTemp),
+                regSpinButton(">", 1, registers.maxOutTemp),
+                regSpinButton(">>", 5, registers.maxOutTemp)
+            ],
+            minInTemp: [
+                regSpinButton("<<", -5, registers.minInTemp),
+                regSpinButton("<", -1, registers.minInTemp),
+                regSpinButton(">", 1, registers.minInTemp),
+                regSpinButton(">>", 5, registers.minInTemp)
             ],
             targetTemp: [
                 regSpinButton("<<", -5, registers.targetTemp),

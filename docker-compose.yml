@@ -3,7 +3,7 @@ version: "2.3"
 services:
   nanook:
     container_name: nanook
-    image: defa/nanook
+    image: defa/nanook@sha256:4b6de98f7e82f9157e753dc1f9632edfdfbc1210d62371b500093675871a671e
     privileged: true
     restart: always
     volumes:

@@ -1,9 +1,8 @@
 {
     "controller": {
         "module": "./controller.js",
-        "maxOutputTemp": 62,
-        "targetTempMaxError": 4,
-        "avgOutputTempRise": 10,
+        "maxOutTemp": 65,
+        "minTempDiff": 8,
         "dataDir": "-> $.DATA_DIR",
         "peripherals": {
             "module": "./peripherals.js",
