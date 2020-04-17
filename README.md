@@ -27,3 +27,8 @@ overlays=usbhost2 usbhost3
 rootdev=UUID=29f9b1c5-1e15-4fa6-a6b8-124559d86198
 rootfstype=ext4
 ```
+
+```
+docker pull defa/nanook
+docker run -d --privileged --name nanook -e HTTP_PORT=80 -e I2C_BUS=hw:0 -e DATA_DIR=/data -p 80:80 -v /dev:/dev -v /data/nanook:/data defa/nanook:latest
+```

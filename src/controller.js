@@ -261,9 +261,10 @@ module.exports = async config => {
                 await config.peripherals.setColdWaterPump(true);
                 await config.peripherals.setHotWaterPump(true);
 
-                await config.peripherals.eevRun(500, true);
-                await asyncWait(10000);
-                await config.peripherals.eevRun(-300, true);
+                // fully open
+                await config.peripherals.eevRun(-500, true);
+                // let evaporator get enough refrigerant to avoid too low pressure on cold start
+                await asyncWait(20000);
 
                 await sweep(async r => {
                     await peripherals.setCompressorRamp(r);
