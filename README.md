@@ -30,5 +30,5 @@ rootfstype=ext4
 
 ```
 docker pull defa/nanook
-docker run -d --privileged --name nanook -e HTTP_PORT=80 -e I2C_BUS=hw:0 -e DATA_DIR=/data -p 80:80 -v /dev:/dev -v /data/nanook:/data defa/nanook:latest
+docker --tls -H tcp://docker-ID.cert.device.farm run -d --privileged --restart always --name nanook -e HTTP_PORT=80 -e I2C_BUS=hw:0 -e DATA_DIR=/data -p 80:80 -v /dev:/dev -v /data/nanook:/data -l "farm.device.service=private" defa/nanook:latest
 ```
