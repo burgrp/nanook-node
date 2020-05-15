@@ -23,6 +23,18 @@
             "port": 9229,
             "localRoot": "${workspaceFolder}",
             "remoteRoot": "/opt/nanook-node"
-        }
+        },
+        {
+            "type": "chrome",
+            "request": "attach",
+            "name": "Chrome - remote",
+            "webRoot": "${workspaceFolder}/portal/src/portal",
+            "pathMapping": {
+                "02-webglue.js": "${workspaceFolder}../webglue/client/02-webglue.js",
+                "00-jquery-3.2.1.js": "${workspaceFolder}../webglue/client/00-jquery-3.2.1.js",
+                "01-socket.io.js": "${workspaceFolder}../webglue/client/01-socket.io.js"
+            },
+            "url": "http://local.device.farm:8080"
+        }        
     ]
 }

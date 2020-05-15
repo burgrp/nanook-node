@@ -214,6 +214,7 @@ wg.pages.home = {
                                     tspan.addClass("register-bound " + key);
                                 }
                             });
+                            span.find("svg").removeAttr("width").removeAttr("height");
                             updateAllRegisters();
                         });
                     }),
