@@ -4,7 +4,7 @@ WORKDIR /nanook
 
 RUN apk add python alpine-sdk linux-headers
 
-COPY package-lock.json package.json .
+COPY package-lock.json package.json ./
 
 RUN npm install
 

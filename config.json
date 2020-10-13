@@ -204,7 +204,8 @@
         "broker": "-> $.MQTT",
         "registers": "-> controller.registers",
         "writeEnabled": [
-            "nanook.targetTemp"
+            "maxOutTemp",
+            "minInTemp"
         ]
     },
     "web": {

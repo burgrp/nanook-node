@@ -44,7 +44,7 @@ module.exports = async config => {
 
                     eachReg(reg => {
                         if (topic === regTopic("set", reg)) {
-                            if ((config.writeEnabled || []).some(rn => rn === regPrefix + "." + reg.key)) {
+                            if ((config.writeEnabled || []).some(rn => rn === reg.key)) {
                                 let value = JSON.parse(message);
                                 console.info(`${reg.key} to be set to ${value} by MQTT`);
                                 reg.set(value);
