@@ -12,7 +12,11 @@ module.exports = async config => {
 
     function publishValue(reg) {
         if (client) {
-            client.publish(regTopic("is", reg), JSON.stringify(reg.value));
+            let value = reg.value;
+            if (Number.isFinite(value)) {
+                value = Math.round(value * 10) / 10;
+            }
+            client.publish(regTopic("is", reg), JSON.stringify(value));
         }
     };
 

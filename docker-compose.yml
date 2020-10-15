@@ -3,7 +3,7 @@ version: "3.7"
 services:
   nanook:
     container_name: nanook    
-    image: defa/nanook@sha256:fed925eccb55767fe691c508f524d4bf72b2b4273ea547c08aa09fa3e7aa6131
+    image: defa/nanook@sha256:cec8f1d0b1b80101dcee93f79a44816d04f64f1a5d7197afe9379a2819e2f22e
     privileged: true
     init: true
     restart: always
