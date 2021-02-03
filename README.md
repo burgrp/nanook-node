@@ -25,13 +25,14 @@ docker run --rm --privileged docker/binfmt:820fdd95a9972a5308930a2bdfb8573dd4447
 
 Build the image
 ```shell
-docker buildx build --platform linux/arm/v7 . -t defa/nanook --push
+docker buildx build --platform linux/arm/v7 . -t defa/nanook
+docker push defa/nanook
 ```
 
 ## Deploy to device
 
 Make sure docker-compose.yml contains valid image reference (manifest SHA) to the build above.
 
-```
+```shell
 defa proxy <deviceId> -- docker-compose up --remove-orphans -d
 ```

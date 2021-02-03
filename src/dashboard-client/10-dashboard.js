@@ -52,26 +52,26 @@ wg.pages.home = {
         }
 
         function createDialog(title, content, apply) {
-                function close() {
-                        dialog.remove();
-                }                                
-                let dialog = DIV("overlay", [
-                        DIV("window", [
-                                DIV("title").text(title),
-                                DIV("content", content),
-                                DIV("buttons", [
-                                        BUTTON().text("Ok").click(() => {
-                                                checkAction(async () => {
-                                                        await apply();
-                                                        close();                                                                
-                                                });
-                                        }),
-                                        BUTTON().text("Cancel").click(close)
-                                ])
-                        ]).click(e => e.stopImmediatePropagation())
-                ]
-                ).click(close).appendTo(container);                                
-        }        
+            function close() {
+                dialog.remove();
+            }
+            let dialog = DIV("overlay", [
+                DIV("window", [
+                    DIV("title").text(title),
+                    DIV("content", content),
+                    DIV("buttons", [
+                        BUTTON().text("Ok").click(() => {
+                            checkAction(async () => {
+                                await apply();
+                                close();
+                            });
+                        }),
+                        BUTTON().text("Cancel").click(close)
+                    ])
+                ]).click(e => e.stopImmediatePropagation())
+            ]
+            ).click(close).appendTo(container);
+        }
 
         let controls = {
             sequenceInProgress: startStopButtons(async s => await (s ? wg.dashboard.start : wg.dashboard.stop)(s), true),
@@ -109,12 +109,25 @@ wg.pages.home = {
                 regSpinButton(">", 1, registers.superheatTarget),
             ],
             mqttBroker: [
-                BUTTON().text("Change").click(e => {                                       
-                        let input = TEXT().val(registers.mqttBroker.value);
-                        createDialog("MQTT Broker", [input], () => {
-                                wg.dashboard.setRegister("mqttBroker", input.val());
-                        });
-                        input.focus().select();
+                BUTTON().text("Change").click(e => {
+                    let input = TEXT().val(registers.mqttBroker.value);
+                    createDialog("MQTT Broker", [input], () => {
+                        wg.dashboard.setRegister("mqttBroker", input.val());
+                    });
+                    input.focus().select();
+                })
+            ],
+            blockingHours: [
+                BUTTON().text("Change").click(e => {
+                    let input = TEXT().val(registers.blockingHours.value);
+                    createDialog("Blocking Hours", [
+                        input,
+                        DIV("hint").text("example: 10-12,14:30-16:30,18,20"),
+                        DIV("hint").text("means: 10:00->12:00, 14:30->16:30, 18:00->19:00, 20:00->21:00")
+                    ], () => {
+                        wg.dashboard.setRegister("blockingHours", input.val());
+                    });
+                    input.focus().select();
                 })
             ]
         }

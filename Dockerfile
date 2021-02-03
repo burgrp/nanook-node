@@ -12,6 +12,8 @@ FROM node:10-alpine
 
 COPY --from=builder /nanook /nanook
 
+RUN apk add tzdata
+
 WORKDIR /nanook
 COPY config.json .
 COPY src src/

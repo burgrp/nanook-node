@@ -197,3 +197,9 @@ button.locked {
     color: whitesmoke;
     padding: 0.5em 2em;
 }
+
+.overlay .window .hint {
+    color: #222;
+    font-size: smaller;
+    margin-top: 0.5em;
+}

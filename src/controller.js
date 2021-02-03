@@ -2,6 +2,7 @@ const createRegister = require("./register.js");
 const createPersistentRegister = require("./persistent.js");
 const asyncWait = require("./async-wait.js");
 const deepEqual = require("fast-deep-equal");
+const tariffHours = require("./tariff-hours.js");
 
 module.exports = async config => {
 
@@ -20,6 +21,7 @@ module.exports = async config => {
         createRegister("sequenceInProgress", "Sequence In Progress"),
         createRegister("startedAt", "Started At"),
         createRegister("stoppedAt", "Stopped At"),
+        await createPersistentRegister(dataDir, "blockingHours", "Blocking Hours", ""),
         createRegister("refrigerant", "Refrigerant", config.refrigerant),
         createRegister("evaporationTemp", "Evaporation Temperature", undefined, "°C"),
         await createPersistentRegister(dataDir, "superheatTarget", "Superheat Target", 12, "°C"),
@@ -122,6 +124,11 @@ module.exports = async config => {
         checkRegister(registers.psLow, true, true);
         checkRegister(registers.psHigh, true, true);
         checkRegister(registers.hotFrigoInTemp, 0, 130);
+    }
+
+    function isBlockedNow() {
+        let hours = tariffHours.parseHours(registers.blockingHours.value);
+        return tariffHours.isHighTariff(new Date(), hours);
     }
 
     async function checkRegistersAndStop() {
@@ -339,7 +346,7 @@ module.exports = async config => {
 
     function scheduleTargetTempStart(scheduleMs) {
         setTimeout(async () => {
-            if (!registers.manualControl.value && registers.minInTemp.value && registers.compressorRelay.value === false) {
+            if (!registers.manualControl.value && registers.minInTemp.value && registers.compressorRelay.value === false && !isBlockedNow()) {
                 try {
                     let nowMs = new Date().getTime();
                     console.info("Target temp start check");
@@ -401,6 +408,9 @@ module.exports = async config => {
                         if (
                             (hotWaterOutTemp >= registers.maxOutTemp.value)
                         ) {
+                            await stop();
+                        } else if (isBlockedNow()) {
+                            console.info("Stopping because of blocking hours");
                             await stop();
                         }
 

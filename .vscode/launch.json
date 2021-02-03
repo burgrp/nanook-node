@@ -16,13 +16,14 @@
             "outputCapture": "std"
         },
         {
+            // defa proxy -s nanook,debugger,docker -p 7070,7071 3d1h8a3w
             "type": "node",
             "request": "attach",
             "name": "NANOOK - remote",
-            "address": "nanook.local",
-            "port": 9229,
+            "address": "localhost",
+            "port": 7071,
             "localRoot": "${workspaceFolder}",
-            "remoteRoot": "/opt/nanook-node"
+            "remoteRoot": "/nanook"
         },
         {
             "type": "chrome",
